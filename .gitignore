@@ -1,3 +1,11 @@
+*.pem
+*.ppk
+**/[Cc]onfig*
+**/[Cc]redentials*
+**/.aws*
+**/.ssh*
+**/aws_attributes*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
