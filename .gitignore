@@ -1,3 +1,11 @@
+*.csv
+*.xlsx
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.txt
 *.pem
 *.ppk
 **/[Cc]onfig*

@@ -31,7 +31,6 @@ def setup_package():
         keywords=["machine learning", "data science"],
         license=license,
         url=url,
-        # download_url = download_url,
         project_urls=project_urls,
         version=version,
         long_description=long_description,
@@ -52,7 +51,6 @@ def setup_package():
         ],
         python_requires=">=3.6.1",
         install_requires=[i.strip() for i in open("requirements.txt").readlines()],
-        # dependency_links=["https://github.com/petersontylerd/prettierplot"],
     )
 
     setuptools.setup(**metadata)
