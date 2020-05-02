@@ -34,4 +34,4 @@ if __name__ == "__main__":
     ec2_launcher = AWSBrainEC2InstanceManager(instance_name=args.instance_name)
 
     # access instance using SSH
-    ec2_launcher.access_instance()
+    ec2_launcher.go_access_instance()

@@ -189,7 +189,7 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object):
             self.s3_client.upload_file(
                 Filename=filename,
                 Bucket=bucket_name,
-                Key=os.path.join(local_object, os.path.relpath(filename, local_object)),
+                Key=os.path.join(local_object.split("/")[-1], os.path.relpath(filename, local_object)),
             )
 
         # execute upload process

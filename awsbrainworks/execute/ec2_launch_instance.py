@@ -103,8 +103,8 @@ args = parser.parse_args()
 if __name__ == "__main__":
 
 
-    ### launch EBS instance
-    # instantiate EBS launcher
+    ### launch EC2 instance
+    # instantiate EC2 launcher
     ec2_launcher = AWSBrainEC2InstanceCreator(
         args.instance_name,
         args.key_name,
@@ -119,9 +119,10 @@ if __name__ == "__main__":
 
     # parse buckets arg
     if args.buckets_to_sync is not None:
+        # instantiate S3 bucket manager
         s3_manager = AWSBrainS3BucketManager()
 
-            # convert input to string to list
+        # convert input to string to list
         args.buckets_to_sync = s3_manager.parse_buckets_arg(args.buckets_to_sync)
 
         # if buckets_to_sync is not None, ensure these buckets exist
@@ -204,14 +205,19 @@ if __name__ == "__main__":
             # get device name for EBS volume
             ebs_volume_creator.volume_device_name = ebs_volume_creator.get_volume_device_name()
 
-            ec2_launcher.import_s3_buckets_into_ebs_volume(
-                args.buckets_to_sync,
+            ec2_launcher.go_setup_ebs_volume_sync(
                 ssh_tunnel,
                 ec2_launcher.instance_username,
                 ebs_volume_creator.volume_device_name,
             )
 
+            # sync S3 bucket to EBS volume
+            ec2_launcher.go_sync_s3_bucket_to_ebs_volume(
+                args.buckets_to_sync,
+                ssh_tunnel,
+            )
+
     ### remote access
     # use SSH to remote into EC2 instance
     if args.access_instance:
-        ec2_launcher.access_instance()
+        ec2_launcher.go_access_instance()

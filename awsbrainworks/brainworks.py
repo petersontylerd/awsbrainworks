@@ -62,19 +62,21 @@ class AWSBrainEC2InstanceManager(AWSBrainEC2InstanceService):
     """
 
     from .compute.ec2.ec2_interact import (
-        access_instance,
         get_block_storage_detail,
         get_block_storage_device_ext4_status,
         get_instance,
         get_instance_username,
         get_scp_tunnel,
         get_ssh_tunnel,
+        go_access_instance,
         go_modify_instance_type,
         go_reboot_instance,
         go_start_instance,
         go_stop_instance,
+        go_sync_s3_bucket_to_ebs_volume,
+        go_sync_ebs_volume_to_s3_bucket,
         go_terminate_instance,
-        import_s3_buckets_into_ebs_volume,
+        go_setup_ebs_volume_sync,
     )
 
     def __init__(self, instance_name=None):
