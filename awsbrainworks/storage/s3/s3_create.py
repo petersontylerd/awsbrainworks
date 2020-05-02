@@ -6,10 +6,8 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-# custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -21,18 +19,18 @@ def create_bucket(self, bucket_name):
 
         ---
         Description:
-            Create a new s3 bucket
+            Create a new S3 bucket
 
         ---
         Parameters:
             bucket_name : str
-                Name to give s3 bucket.
+                Name to give S3 bucket.
     """
     # catch naming convention error
     if "_" in bucket_name:
         raise NameError ("bucket_name cannot include underscores.")
 
-    # create the s3 bucket
+    # create the S3 bucket
     self.s3_client.create_bucket(
         ACL="private",
         Bucket=bucket_name,

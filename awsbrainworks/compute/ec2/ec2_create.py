@@ -6,8 +6,8 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -20,7 +20,7 @@ def go_launch_instance(self):
             ---
             Description:
                 Launch EC2 instance, setup bash and python environment, and optionally sync one or
-                more s3 buckets to EBS volume.
+                more S3 buckets to EBS volume.
         """
         # check that there is an instance with that name
         assert self.instance_name not in self.get_instance_names(), "\nInstance name already associated with another instance.\n"
@@ -80,13 +80,13 @@ def go_launch_instance(self):
 
         ## EC2 Instance wake-up process
         ## waiter
+
+        # wait until EC2 instance is available
         custom_filter = [{
                     "Name":"tag:Name",
                     "Values": [self.instance_name]
                 },
         ]
-
-        # wait until EC2 instance is available
         waiter = self.ec2_client.get_waiter('instance_exists')
         waiter.wait(Filters=custom_filter)
         print("Success: EC2 Instance '{}' now exists".format(self.instance_name))
@@ -95,15 +95,15 @@ def go_launch_instance(self):
         self.instance = self.get_instance()
 
         # wait until EC2 instance is running
+        print("EC2 Instance '{}' starting...".format(self.instance_name))
         waiter = self.ec2_client.get_waiter('instance_running')
         waiter.wait(InstanceIds=[self.instance.id])
-        # waiter.wait(Filters=custom_filter)
         print("Success: EC2 Instance '{}' is now running".format(self.instance_name))
 
         # wait until EC2 instance has a status of 'ok'
+        print("EC2 Instance '{}' initializing...".format(self.instance_name))
         waiter = self.ec2_client.get_waiter('instance_status_ok')
         waiter.wait(InstanceIds=[self.instance.id])
-        # waiter.wait(Filters=custom_filter)
         print("Success: EC2 Instance '{}' status is now ok".format(self.instance_name))
 
         # reload EC2 instance

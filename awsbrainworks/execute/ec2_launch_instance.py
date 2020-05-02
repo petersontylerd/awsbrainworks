@@ -7,8 +7,8 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         args.buckets_to_sync = s3_manager.parse_buckets_arg(args.buckets_to_sync)
 
         # if buckets_to_sync is not None, ensure these buckets exist
-        assert set(args.buckets_to_sync).issubset(s3_manager.get_bucket_names()), "One or more of the buckets_to_sync does not exist on s3."
+        assert set(args.buckets_to_sync).issubset(s3_manager.get_bucket_names()), "One or more of the buckets_to_sync does not exist on S3."
 
     # launch an EC2 instance
     ec2_launcher.go_launch_instance()
@@ -197,14 +197,14 @@ if __name__ == "__main__":
         )
 
 
-        ### s3 to EBS
-        # sync s3 buckets to EBS volume
+        ### S3 to EBS
+        # sync S3 buckets to EBS volume
         if args.buckets_to_sync is not None:
 
             # get device name for EBS volume
             ebs_volume_creator.volume_device_name = ebs_volume_creator.get_volume_device_name()
 
-            ec2_launcher.sync_s3_bucket_to_ebs_volume(
+            ec2_launcher.import_s3_buckets_into_ebs_volume(
                 args.buckets_to_sync,
                 ssh_tunnel,
                 ec2_launcher.instance_username,

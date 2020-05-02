@@ -6,8 +6,8 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -94,6 +94,7 @@ def go_attach_volume(self, instance_name, ebs_device_name="/dev/xvdf"):
     ]
 
     # wait until volume is available
+    print("EBS Volume attaching...")
     waiter = self.ebs_client.get_waiter('volume_in_use')
     waiter.wait(Filters=custom_filter)
     print("Success: EBS Volume '{}' is now in use by EC2 Instance '{}'".format(self.volume_name, ec2.instance_name))
@@ -130,13 +131,13 @@ def go_detach_volume(self, instance_name, ebs_device_name="/dev/xvdf"):
     )
 
     ## waiter
+    # wait until volume is available
     custom_filter = [{
                 "Name":"tag:Name",
                 "Values": [self.volume_name]
             },
     ]
-
-    # wait until volume is available
+    print("EBS Volume detaching...")
     waiter = self.ebs_client.get_waiter('volume_available')
     waiter.wait(Filters=custom_filter)
     print("Success: EBS Volume '{}' is now detached from EC2 Instance '{}' and is available".format(self.volume_name, ec2.instance_name))
@@ -151,7 +152,7 @@ def go_delete_volume(self):
     """
     self.volume.delete()
 
-    # ## waiter
+    ## waiter
     # custom_filter = [{
     #             "Name":"tag:Name",
     #             "Values": [self.volume_name]
@@ -162,3 +163,22 @@ def go_delete_volume(self):
     # waiter = self.ebs_client.get_waiter('volume_deleted')
     # waiter.wait(Filters=custom_filter)
     # print("Success: EBS Volume '{}' is now deleted".format(self.volume_name))
+
+def modify_volume_size(self, new_voume_size):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Modify size if EBS volume.
+
+        ---
+        Parameters:
+            new_volume_size : int
+                Name size of EBS volume in gigabytes.
+    """
+    # modify volume size
+    self.ebs_client.modify_volume(
+        VolumeId=self.volume.id,
+        Size=new_voume_size,
+    )

@@ -6,34 +6,33 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
 
 
-def get_raw_buckets(self):
+def get_buckets(self):
     """
     Documentation:
 
         ---
         Description:
-            Associate each s3 bucket name with its s3 bucket object.
+            Associate each S3 bucket name with its S3 bucket object.
 
         ---
         Returns:
            raw_bucket : dict
-                Dictonary where the keys are s3 bucket names and the
-                values are the associated s3 bucket objects.
+                Dictonary where the keys are S3 bucket names and the
+                values are the associated S3 bucket objects.
     """
-    # gather s3 bucket object for each s3 bucket name
+    # gather S3 bucket object for each S3 bucket name
     raw_buckets = {}
     for instance in self.s3_resource.buckets.all():
         raw_buckets[instance.name] = instance
 
     return raw_buckets
-
 
 def get_bucket_names(self):
     """
@@ -48,8 +47,8 @@ def get_bucket_names(self):
             instance_names : list
                 List containing Name tags of all active EC2 instances.
     """
-    # return dictionary containing s3 bucket name / s3 bucket object pairs
-    raw_buckets = self.get_raw_buckets()
+    # return dictionary containing S3 bucket name / S3 bucket object pairs
+    raw_buckets = self.get_buckets()
 
     # distill bucket names from raw_buckets dictionary
     bucket_names = [bucket_name for bucket_name in raw_buckets.keys()]

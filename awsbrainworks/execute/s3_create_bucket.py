@@ -7,9 +7,11 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
-from awsbrainworks import AWSBrainS3BucketManager
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
+import aws_attributes
+import awsbrainworks
 
 ## arguments
 parser = argparse.ArgumentParser(description="")
@@ -26,7 +28,7 @@ args = parser.parse_args()
 ## execute
 if __name__ == "__main__":
 
-    ### create s3 bucket manager
+    ### create S3 bucket manager
     # instantiate manager
     s3_manager = AWSBrainS3BucketManager()
 

@@ -1,4 +1,4 @@
-python execute_launch_instance.py \
+python ec2_launch_instance.py \
                 --instance_name=$1 \
                 --key_name=mactp \
                 --ami_name=ubuntu_1804_basic \
@@ -8,4 +8,4 @@ python execute_launch_instance.py \
                 --user_data=wakeup_ubuntu.sh \
                 --shutdown_behavior=stop \
                 --access_instance \
-                --buckets_to_sync=tdp-test-bucket,tdp-another-bucket
+                --buckets_to_sync=tdp-test-bucket

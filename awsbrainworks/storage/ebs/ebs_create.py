@@ -6,8 +6,8 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -53,6 +53,7 @@ def go_create_volume(self):
     ]
 
     # wait until volume is available
+    print("EBS Volume initializing...")
     waiter = self.ebs_client.get_waiter('volume_available')
     waiter.wait(Filters=custom_filter)
     print("Success: EBS Volume '{}' is now available".format(self.volume_name))

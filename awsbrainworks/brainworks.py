@@ -5,9 +5,14 @@ import time
 
 import os
 import sys
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
+
+# custom imports
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
+import awsbrainworks
+
 
 class AWSBrainEC2InstanceService:
     """
@@ -22,6 +27,7 @@ class AWSBrainEC2InstanceService:
         get_instances,
         get_instance_name_tags,
         get_instance_names,
+        get_instance_types,
         get_raw_instances,
         go_create_ssh_key,
     )
@@ -63,7 +69,12 @@ class AWSBrainEC2InstanceManager(AWSBrainEC2InstanceService):
         get_instance_username,
         get_scp_tunnel,
         get_ssh_tunnel,
-        sync_s3_bucket_to_ebs_volume,
+        go_modify_instance_type,
+        go_reboot_instance,
+        go_start_instance,
+        go_stop_instance,
+        go_terminate_instance,
+        import_s3_buckets_into_ebs_volume,
     )
 
     def __init__(self, instance_name=None):
@@ -89,7 +100,7 @@ class AWSBrainEC2InstanceManager(AWSBrainEC2InstanceService):
         AWSBrainEC2InstanceService.__init__(self)
         self.instance_name = instance_name
 
-        # if instance_name is provided, get instance and instance_username
+        # if instance_name is provided, get instance
         if self.instance_name is not None:
 
             # check to ensure there exists an EC2 instance with the specified name
@@ -139,7 +150,7 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
                 volume_size : int or float, default=None
                     Size in gigabytes of the EBS volume. Optional
                 buckets_to_sync : str or list, default=None
-                    Name(s) of s3 bucket object(s) to sync. Provide as a string or a list of strings.
+                    Name(s) of S3 bucket object(s) to sync. Provide as a string or a list of strings.
                 user_data : str, default=None
                     Optional shell script executed as instance is first created.
                 shutdown_behavior : str, default="stop"
@@ -159,6 +170,9 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
 
         # make sure there isn't already an EC2 instance with the specified name
         assert self.instance_name not in self.get_instance_names(), "\nThere is already an active EC2 instance with that name.\n"
+
+        # # make sure EC2 instance type is among available instance types
+        # assert self.instance_type in self.get_instance_types(), "\ninstance_type '{}' not among available options.\n".format(self.instance_type)
 
         # check to ensure that both volume_name and volume_size are provided if either is provided
         if self.volume_name is not None or self.volume_size is not None:
@@ -180,13 +194,13 @@ class AWSBrainS3BucketService:
 
         ---
         Description:
-            Gather information about s3 buckets.
+            Gather information about S3 buckets.
 
     """
 
     from .storage.s3.s3_service import (
         get_bucket_names,
-        get_raw_buckets,
+        get_buckets,
     )
 
     def __init__(self):
@@ -199,10 +213,10 @@ class AWSBrainS3BucketService:
 
             ---
             Attributes:
-                s3_resource : s3 bucket resource object
-                    s3 bucket resource API
-                s3_client : s3 bucket client object
-                    s3 bucket client API
+                s3_resource : S3 bucket resource object
+                    S3 bucket resource API
+                s3_client : S3 bucket client object
+                    S3 bucket client API
         """
         self.s3_resource = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
@@ -213,12 +227,16 @@ class AWSBrainS3BucketManager(AWSBrainS3BucketService):
 
         ---
         Description:
-            Interact with s3 services.
+            Interact with S3 services.
     """
     from .storage.s3.s3_interact import (
+        get_bucket,
+        get_s3_bucket_contents,
+        go_delete_bucket_file,
+        go_delete_bucket_folder,
+        go_empty_bucket,
+        go_upload_local_object_to_bucket,
         parse_buckets_arg,
-        upload_directory_to_bucket,
-        upload_file_to_bucket,
     )
 
     def __init__(self, bucket_name=None):
@@ -227,16 +245,25 @@ class AWSBrainS3BucketManager(AWSBrainS3BucketService):
 
             ---
             Description:
-                Manage s3 bucket-related tasks.
+                Manage S3 bucket-related tasks.
 
             ---
             Parameters:
                 bucket_name : str, default=None
-                    Name of s3 bucket
+                    Name of S3 bucket
         """
         AWSBrainS3BucketService.__init__(self)
 
         self.bucket_name = bucket_name
+
+        # if bucket_name is provided, get bucket
+        if self.bucket_name is not None:
+
+            # check to ensure there exists an EC2 instance with the specified name
+            assert self.bucket_name in self.get_bucket_names(), "No S3 bucket with that name."
+
+            # get EC2 instance object
+            self.bucket = self.get_bucket()
 
 class AWSBrainS3BucketCreator(AWSBrainS3BucketManager):
     """
@@ -244,7 +271,7 @@ class AWSBrainS3BucketCreator(AWSBrainS3BucketManager):
 
         ---
         Description:
-            Create new s3 bucket.
+            Create new S3 bucket.
     """
     from .storage.s3.s3_create import (
         create_bucket,
@@ -257,12 +284,12 @@ class AWSBrainS3BucketCreator(AWSBrainS3BucketManager):
 
             ---
             Description:
-                Create new s3 bucket.
+                Create new S3 bucket.
 
             ---
             Parameters:
                 bucket_name : str
-                    Name of s3 bucket
+                    Name of S3 bucket
         """
         AWSBrainS3BucketManager.__init__(self)
 

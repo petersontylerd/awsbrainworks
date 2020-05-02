@@ -8,12 +8,120 @@ import time
 from concurrent import futures
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
 
+def get_bucket(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Use bucket name to return a single S3 bucket object.
+
+        ---
+        Returns:
+            bucket : S3 bucket
+                S3 bucket object
+    """
+    # return
+    # 6 dictionary containing Name tag / EC2 instance object
+    buckets = self.get_buckets()
+
+    # check that there is an instance with that name
+    assert self.bucket_name in self.get_bucket_names(), "\nNo S3 bucket with that name.\n"
+
+    # filter instances by instance_name
+    bucket = buckets[self.bucket_name]
+
+    return bucket
+
+def get_s3_bucket_contents(self, prefix="", extensions=None):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Retrieve all files from a specified folder in an S3 bucket,
+            optionally filtering by one or more file extensions
+
+        ---
+        Returns:
+            prefix : str, default=""
+                Filter contents by object Key prefix.
+            extensions : str or list
+                Optional parameter for filter folder contents to one or more
+                file extension types.
+    """
+    # get all files in bucket
+    try:
+        bucket_files = [file["Key"] for file in self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix)["Contents"]]
+    except KeyError:
+        print("S3 bucket '{}' is empty.".format(self.bucket_name))
+
+    # filter
+    if extensions is not None:
+        # build extensions filter if provided
+        if isinstance(extensions, str):
+            extensions = [extensions]
+
+        # ensure each extension begins with "."
+        extensions = [ext if ext.startswith(".") else "." + ext for ext in extensions]
+
+        # filter bucket_files based on specified extensions
+        bucket_files = [file for file in bucket_files if any(file.endswith(ext) for ext in extensions)]
+
+    return bucket_files
+
+def go_delete_bucket_file(self, file_name):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Use bucket name to return a single S3 bucket object.
+
+        ---
+        RetuParametersrns:
+            file_name : str
+                Name of file to delete.
+    """
+    # ensure that file_name is among existing S3 bucket files
+    assert file_name in self.get_s3_bucket_contents(), "file_name not among existing S3 bucket files"
+
+    self.s3_resource.Object(self.bucket_name, file_name).delete()
+
+def go_delete_bucket_folder(self, folder_name):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Use bucket name to return a single S3 bucket object.
+
+        ---
+        Parametters:
+            folder_name : str
+                Name of folder to delete.
+    """
+    if folder_name[-1] != "/":
+        folder_name = folder_name + "/"
+
+    # make sure file is among objects in bucket
+    self.bucket.objects.filter(Prefix=folder_name).delete()
+
+def go_empty_bucket(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Use bucket name to return a single S3 bucket object.
+    """
+    self.bucket.objects.all().delete()
 
 def parse_buckets_arg(self, buckets):
     """
@@ -26,17 +134,17 @@ def parse_buckets_arg(self, buckets):
         ---
         Parameters:
             buckets : str
-                String containing s3 bucket names. To pass multiple s3
+                String containing S3 bucket names. To pass multiple S3
                 bucket names, have the string take the form of a
-                comma-separated list of s3 bucket names
+                comma-separated list of S3 bucket names
 
         ---
         Returns:
             buckets : list
-                List containing one string per s3 bucket specified.
+                List containing one string per S3 bucket specified.
     """
     # if the string provided has a comma in it, treat this is a string
-    # containing multiple s3 buckets, and turn this into a list of
+    # containing multiple S3 buckets, and turn this into a list of
     # separate strings
     if "," in buckets:
         buckets = buckets.split(",")
@@ -47,59 +155,55 @@ def parse_buckets_arg(self, buckets):
 
     return buckets
 
-def upload_directory_to_bucket(self, bucket_name, local_directory):
+def go_upload_local_object_to_bucket(self, bucket_name, local_object):
     """
     Documentation:
 
         ---
         Description:
-            Upload local directory to s3 bucket. s3 bucket directory takes
-            the same name of the local directory.
+            Upload local object to S3 bucket. S3 object takes the same
+            name of the local directory. Function detects whether the
+            local object is a file or a folder. If a folder is provided,
+            the entire folder is loaded into S3 bucket.
 
         ---
         Parameters:
             bucket_name : str
-                Name of s3 bucket.
-            local_directory : str
-                Local directory to upload to bucket
+                Name of S3 bucket.
+            local_object : str
+                Local object to upload to bucket.
     """
-    def error(e):
-        raise e
+    # if the local_object is a reference to a folder
+    if os.path.isdir(local_object):
 
-    # walk through each folder and file within the local directory
-    def walk_local_directory(local_directory):
-        for root, _, files in os.walk(local_directory, onerror=error):
-            for f in files:
-                yield os.path.join(root, f)
-    # upload each file
-    def upload_file(filename):
+        def error(e):
+            raise e
+
+        # walk through each folder and file within the local directory
+        def walk_local_directory(local_object):
+            for root, _, files in os.walk(local_object, onerror=error):
+                for f in files:
+                    yield os.path.join(root, f)
+        # upload each file
+        def upload_file(filename):
+            self.s3_client.upload_file(
+                Filename=filename,
+                Bucket=bucket_name,
+                Key=os.path.join(local_object, os.path.relpath(filename, local_object)),
+            )
+
+        # execute upload process
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(upload_file, filename) for filename in walk_local_directory(local_object)],
+                return_when=futures.FIRST_EXCEPTION,
+            )
+
+    # if the local_object is a reference to a file
+    elif os.path.isfile(local_object):
+
         self.s3_client.upload_file(
-            Filename=filename,
-            Bucket=bucket_name,
-            Key=os.path.join(local_directory, os.path.relpath(filename, local_directory)),
+            local_object,
+            self.bucket_name,
+            local_object.split("/")[-1],
         )
-
-    # execute upload process
-    with futures.ThreadPoolExecutor() as executor:
-        futures.wait(
-            [executor.submit(upload_file, filename) for filename in walk_local_directory(local_directory)],
-            return_when=futures.FIRST_EXCEPTION,
-        )
-
-def upload_file_to_bucket(self, bucket_name, file_name):
-    """
-    Documentation:
-
-        ---
-        Description:
-            Upload individual local file to s3 bucket. File on s3 bucket
-            takes the same name as the local file.
-
-        ---
-        Parameters:
-            bucket_name : str
-                Name of s3 bucket.
-            file_name : str
-                Name of file to transfer
-    """
-    self.s3_resource.Bucket(bucket_name).upload_file(file_name, file_name)

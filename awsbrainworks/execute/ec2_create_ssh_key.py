@@ -7,8 +7,11 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
-from awsbrainworks import AWSBrainEC2InstanceManager
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
+
+import aws_attributes
+from awsbrainworks import AWSBrainEC2InstanceService
 
 
 ## arguments
@@ -25,4 +28,4 @@ args = parser.parse_args()
 
 ## execute
 if __name__ == "__main__":
-    AWSBrainEC2InstanceManager().go_create_ssh_key(args.key_name)
+    AWSBrainEC2InstanceService().go_create_ssh_key(args.key_name)

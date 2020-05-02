@@ -6,12 +6,11 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
-
 
 
 def get_raw_instances(self):
@@ -132,7 +131,7 @@ def go_create_ssh_key(self, key_name):
                 Name to give .pem private key file.
     """
     # set folder and file variables
-    ssh_path = os.path.join(os.environ["WORKSPACE"], ".ssh")
+    ssh_path = os.path.join(os.environ["HOME"], ".ssh")
     key_path = os.path.join(ssh_path, "{}.pem".format(key_name))
 
     # make hidden folder for SSH keys
@@ -151,3 +150,14 @@ def go_create_ssh_key(self, key_name):
 
     # make file executable
     os.chmod(key_path, int("400", base=8))
+
+def get_instance_types(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Generate SSH pub
+    """
+    instance_types = sorted([instance_type["InstanceType"] for instance_type in self.ec2_client.describe_instance_types()["InstanceTypes"]])
+    return instance_types

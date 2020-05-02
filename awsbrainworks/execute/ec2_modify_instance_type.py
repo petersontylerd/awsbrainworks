@@ -7,9 +7,11 @@ import sys
 import time
 
 # custom imports
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
-from awsbrainworks import AWSBrainEC2InstanceManager
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
+import aws_attributes
+import awsbrainworks
 
 ## arguments
 parser = argparse.ArgumentParser(description="")

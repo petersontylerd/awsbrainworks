@@ -2,14 +2,15 @@
 ## libraries
 import ast
 import boto3
+from botocore.exceptions import ClientError
 import os
 import subprocess
 import sys
 import time
 
 # custom imports
-sys.path.append("{}/.aws".format(os.environ["WORKSPACE"]))
-sys.path.append("{}/awsbrainworks".format(os.environ["WORKSPACE"]))
+sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
+sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -82,7 +83,7 @@ def get_ssh_tunnel(self):
 
     # create prefix for SSH tunneling command line script
     ssh_tunnel = "ssh -o 'StrictHostKeyChecking no' -i {}/.ssh/{}.pem {}@{}".format(
-                                                                                os.environ["WORKSPACE"],
+                                                                                os.environ["HOME"],
                                                                                 self.instance.key_name,
                                                                                 instance_username,
                                                                                 self.instance.public_dns_name
@@ -105,7 +106,7 @@ def get_scp_tunnel(self):
     """
     # create prefix for scp tunneling command line script
     scp_tunnel = """scp -i {}/.ssh/{}.pem """.format(
-                                                    os.environ["WORKSPACE"],
+                                                    os.environ["HOME"],
                                                     self.instance.key_name,
                                                 )
     return scp_tunnel
@@ -196,19 +197,19 @@ def get_block_storage_device_ext4_status(self, ssh_tunnel, volume_device_name):
         block_device_is_ext4 = True
     return block_device_is_ext4
 
-def sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, instance_username, volume_device_name, destination_dir="/home/s3buckets"):
+def import_s3_buckets_into_ebs_volume(self, buckets_to_sync, ssh_tunnel, instance_username, volume_device_name, destination_dir="/home/s3buckets"):
     """
     Documentation:
 
         ---
         Description:
-            Synchronize one or more s3 buckets with an EBS volume in an EC2 instance.
+            Synchronize one or more S3 buckets with an EBS volume in an EC2 instance.
 
         ---
         Parameters:
             buckets_to_sync : str or list
-                Preferably a list of strings of s3 buckets. If string is passed,, have
-                the string take the form of a comma-separated list of s3 bucket names.
+                Preferably a list of strings of S3 buckets. If string is passed,, have
+                the string take the form of a comma-separated list of S3 bucket names.
                 This will be parsed into a list of string.
             ssh_tunnel : str, default=None
                 String for using SSH to remotely execute script on EC2 instance.
@@ -217,76 +218,207 @@ def sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, instance_use
             volume_device_name : str
                 Device name of EBS volume in EC2 instance
             destination_dir : str, default=/home/s3buckets
-                Destination directory for s3 bucket(s) on EBS volume
+                Destination directory for S3 bucket(s) on EBS volume
     """
-    print("!!!!")
-    print(buckets_to_sync)
-    print(ssh_tunnel)
-    print(instance_username)
-    print(volume_device_name)
-    print("!!!!")
-
     ### setup file system
     # treat special (block) files as ordinay ones
     special_files = """ "sudo file --special-files {0}" """.format(volume_device_name)
     subprocess.run(ssh_tunnel + special_files, shell=True)
-    print(1)
 
     # create an ext4 filesystem on the EBS drive, if it's not already ext4
     make_file_system = """ "sudo mkfs -t ext4 {0}" """.format(volume_device_name)
     subprocess.run(ssh_tunnel + make_file_system, shell=True)
-    print(2)
 
     # create a mount point, basically an empty directory
     make_s3_dir = """ "sudo mkdir {0}" """.format(destination_dir)
     subprocess.run(ssh_tunnel + make_s3_dir, shell=True)
-    print(3)
 
     # mount the new volume
     mount_s3_dir = """ "sudo mount {0} {1}" """.format(volume_device_name, destination_dir)
     subprocess.run(ssh_tunnel + mount_s3_dir, shell=True)
-    print(4)
 
     ### update fstab file
     # back up fstab file
     backup_fstab = """ "sudo cp /etc/fstab /etc/fstab.bak" """
     subprocess.run(ssh_tunnel + backup_fstab, shell=True)
-    print(5)
 
     # add s3bucket to fstab
     append_file_system = """ "echo '{0} {1} ext4 defaults,nofail 0 0' | sudo tee -a /etc/fstab.bak >/dev/null" """.format(volume_device_name, destination_dir)
     subprocess.run(ssh_tunnel + append_file_system, shell=True)
-    print(6)
 
     change_owner = """ "sudo chown -R {0}:{0} {1}" """.format(instance_username, destination_dir)
     subprocess.run(ssh_tunnel + change_owner, shell=True)
-    print(7)
 
     ### sync buckets
     # sync each bucket
     for bucket in buckets_to_sync:
-        directory_name = """ "sudo aws s3 sync s3://{0} {1}/{0}" """.format(bucket, destination_dir)
+        directory_name = """ "sudo aws S3 sync S3://{0} {1}/{0}" """.format(bucket, destination_dir)
         subprocess.run(ssh_tunnel + directory_name, shell=True)
-    print(8)
 
-def modify_instance_type(self, instance_type):
+def go_start_instance(self):
     """
     Documentation:
 
         ---
         Description:
+            Start a stopped EC2 instance.
+    """
+    self.ec2_client.start_instances(
+        InstanceIds=[self.instance.id],
+        DryRun=False
+    )
 
+    ## EC2 Instance wake-up process
+    # wait until EC2 instance is running
+    print("EC2 Instance '{}' starting...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_running')
+    waiter.wait(InstanceIds=[self.instance.id])
+    print("Success: EC2 Instance '{}' is now running".format(self.instance_name))
+
+    # wait until EC2 instance has a status of 'ok'
+    print("EC2 Instance '{}' initializing...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_status_ok')
+    waiter.wait(InstanceIds=[self.instance.id])
+    print("Success: EC2 Instance '{}' status is now ok".format(self.instance_name))
+
+def go_stop_instance(self, hibernate=False):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Stop a running EC2 instance.
 
         ---
         Parameters:
-            a : b
-                c
+            hibernate : boolean
+                Conditional controlling whether to hibernate the stopped instance.
+    """
+    self.ec2_client.stop_instances(
+        InstanceIds=[self.instance.id],
+        Hibernate=hibernate,
+        DryRun=False
+    )
+
+    ## EC2 Instance wake-up process
+    ## waiter
+    custom_filter = [{
+                "Name":"tag:Name",
+                "Values": [self.instance_name]
+            },
+    ]
+
+    # wait until EC2 instance is available
+    print("EC2 Instance '{}' stopping...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_stopped')
+    waiter.wait(Filters=custom_filter)
+    print("Success: EC2 Instance '{}' now stopped".format(self.instance_name))
+
+def go_terminate_instance(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Terminate an EC2 instance.
+    """
+    self.ec2_client.terminate_instances(
+        InstanceIds=[self.instance.id],
+        DryRun=False
+    )
+
+    ## EC2 Instance wake-up process
+    ## waiter
+    custom_filter = [{
+                "Name":"tag:Name",
+                "Values": [self.instance_name]
+            },
+    ]
+
+    # wait until EC2 instance is available
+    print("EC2 Instance '{}' terminating...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_terminated')
+    waiter.wait(Filters=custom_filter)
+    print("Success: EC2 Instance '{}' now terminated".format(self.instance_name))
+
+def go_reboot_instance(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Reboot and EC2 instance.
+    """
+    self.ec2_client.reboot_instances(
+        InstanceIds=[self.instance.id],
+        DryRun=False
+    )
+    # wait until EC2 instance is running
+    print("EC2 Instance '{}' starting...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_running')
+    waiter.wait(InstanceIds=[self.instance.id])
+    print("Success: EC2 Instance '{}' is now running".format(self.instance_name))
+
+    # wait until EC2 instance has a status of 'ok'
+    print("EC2 Instance '{}' initializing...".format(self.instance_name))
+    waiter = self.ec2_client.get_waiter('instance_status_ok')
+    waiter.wait(InstanceIds=[self.instance.id])
+    time.sleep(10)
+    print("Success: EC2 Instance '{}' status is now ok".format(self.instance_name))
+    print("Success: EC2 Instance '{}' now rebooted".format(self.instance_name))
+
+def go_modify_instance_type(self, instance_type, stop_if_running=False, restart_instance=False):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Modify an EC2 instance's type.
+
+        ---
+        Parameters:
+            stop_if_running : boolean, default=False
+                Conditional controlling whether to stop an instance if it
+                is running so that the instance type change can be applied.
+            restart_insnce : boolean, default=False
+                Conditional controlling whether to restart an instance after changing the
+                instance type.
 
 
     """
-    self.ec2_client.modify_instance_attribute(
-        InstanceId=instance_id,
-        InstanceType={
-            'Value': instance_type,
-        },
-    )
+    # # make sure EC2 instance type is among available instance types
+    # assert instance_type in self.get_instance_types(), "\ninstance_type '{}' not among available options.\n".format(instance_type)
+
+    # see if EC2 instance type is already set as the requested instance type
+    assert self.instance.instance_type != instance_type, "\ninstance_type is already '{}'.\n".format(instance_type)
+
+    try:
+        # modify instance type
+        self.ec2_client.modify_instance_attribute(
+            InstanceId=self.instance.id,
+            InstanceType={
+                'Value': instance_type,
+            },
+        )
+        print("Success: EC2 Instance '{}' now has the type '{}'".format(self.instance_name, instance_type))
+
+        # start instance
+        if restart_instance:
+            self.go_start_instance()
+
+    except ClientError:
+        # stop instance before proceeding
+        self.go_stop_instance()
+
+        # modify instance type
+        self.ec2_client.modify_instance_attribute(
+            InstanceId=self.instance.id,
+            InstanceType={
+                'Value': instance_type,
+            },
+        )
+        print("Success: EC2 Instance '{}' now has the type '{}'".format(self.instance_name, instance_type))
+
+        # start instance
+        if restart_instance:
+            self.go_start_instance()
