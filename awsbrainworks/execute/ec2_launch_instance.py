@@ -198,18 +198,22 @@ if __name__ == "__main__":
         )
 
 
+        # 5 second pause
+        time.sleep(5)
+
+        # get device name for EBS volume
+        ebs_volume_creator.volume_device_name = ebs_volume_creator.get_volume_device_name()
+
+        # setup EBS volume as file system and prep for sync with S3
+        ec2_launcher.go_setup_ebs_volume_sync(
+            ssh_tunnel,
+            ec2_launcher.instance_username,
+            ebs_volume_creator.volume_device_name,
+        )
+
         ### S3 to EBS
         # sync S3 buckets to EBS volume
         if args.buckets_to_sync is not None:
-
-            # get device name for EBS volume
-            ebs_volume_creator.volume_device_name = ebs_volume_creator.get_volume_device_name()
-
-            ec2_launcher.go_setup_ebs_volume_sync(
-                ssh_tunnel,
-                ec2_launcher.instance_username,
-                ebs_volume_creator.volume_device_name,
-            )
 
             # sync S3 bucket to EBS volume
             ec2_launcher.go_sync_s3_bucket_to_ebs_volume(

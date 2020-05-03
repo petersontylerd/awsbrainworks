@@ -30,6 +30,13 @@ parser.add_argument(
     dest="local_object",
     help="Name of file or directory to move to bucket.",
 )
+parser.add_argument(
+    "--prefix",
+    required=False,
+    type=str,
+    dest="prefix",
+    help="Optional string to append to front of S3 object name.",
+)
 args = parser.parse_args()
 
 
@@ -43,4 +50,5 @@ if __name__ == "__main__":
     s3_manager.go_upload_local_object_to_bucket(
         args.bucket_name,
         args.local_object,
+        args.prefix,
     )

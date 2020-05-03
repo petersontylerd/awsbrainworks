@@ -54,7 +54,7 @@ if __name__ == "__main__":
     ssh_tunnel = ec2_instance.get_ssh_tunnel()
 
     # sync S3 bucket to EBS volume
-    ec2_instance.go_sync_s3_bucket_to_ebs_volume(
+    ec2_instance.go_sync_ebs_volume_to_s3_bucket(
         args.buckets_to_sync,
         ssh_tunnel,
     )

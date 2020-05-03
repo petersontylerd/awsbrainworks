@@ -124,6 +124,7 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
         get_ami_id,
         get_user_data_status,
         go_launch_instance,
+        go_make_user_sudo
         go_setup_aws,
         go_setup_bash,
         go_setup_python,

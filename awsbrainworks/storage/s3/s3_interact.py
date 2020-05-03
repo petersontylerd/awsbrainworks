@@ -155,16 +155,20 @@ def parse_buckets_arg(self, buckets):
 
     return buckets
 
-def go_upload_local_object_to_bucket(self, bucket_name, local_object):
+def go_upload_local_object_to_bucket(self, bucket_name, local_object, prefix=""):
     """
     Documentation:
 
         ---
         Description:
-            Upload local object to S3 bucket. S3 object takes the same
-            name of the local directory. Function detects whether the
-            local object is a file or a folder. If a folder is provided,
-            the entire folder is loaded into S3 bucket.
+            Upload local object to S3 bucket. S3 object takes the same name of the
+            local directory. Function detects whether the local object is a file or
+            a folder. If a folder is provided, the entire folder is loaded into S3
+            bucket.
+
+            Note - The folder or file will be placed at the root directory of the
+            S3 bucket. If the desired outcomes is for the folder or file to be placed
+            in a folder within the S3 bucket, add a prefix.
 
         ---
         Parameters:
@@ -172,10 +176,14 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object):
                 Name of S3 bucket.
             local_object : str
                 Local object to upload to bucket.
+            prefix : str, default=""
+                Optional string to append to front of S3 object name.
     """
+    assert os.path.isdir(local_object) or os.path.isfile(local_object), "Cannot locate local object based on directory provided."
+
     # if the local_object is a reference to a folder
     if os.path.isdir(local_object):
-
+        print("folder")
         def error(e):
             raise e
 
@@ -184,12 +192,13 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object):
             for root, _, files in os.walk(local_object, onerror=error):
                 for f in files:
                     yield os.path.join(root, f)
+
         # upload each file
         def upload_file(filename):
             self.s3_client.upload_file(
                 Filename=filename,
                 Bucket=bucket_name,
-                Key=os.path.join(local_object.split("/")[-1], os.path.relpath(filename, local_object)),
+                Key=os.path.join(prefix, local_object.split("/")[-1], os.path.relpath(filename, local_object)),
             )
 
         # execute upload process
@@ -201,9 +210,9 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object):
 
     # if the local_object is a reference to a file
     elif os.path.isfile(local_object):
-
+        print("file")
         self.s3_client.upload_file(
             local_object,
             self.bucket_name,
-            local_object.split("/")[-1],
+            os.path.join(prefix,local_object.split("/")[-1]),
         )

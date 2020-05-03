@@ -270,7 +270,7 @@ def go_sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, destinati
         directory_name = """ "sudo aws s3 sync s3://{0} {1}/{0}" """.format(bucket, destination_dir)
         subprocess.run(ssh_tunnel + directory_name, shell=True)
 
-def go_sync_ebs_volume_to_s3_bucket(self, bucket_to_sync, ssh_tunnel, destination_dir="/home/s3buckets"):
+def go_sync_ebs_volume_to_s3_bucket(self, buckets_to_sync, ssh_tunnel, ebs_bucket_dir="/home/s3buckets"):
     """
     Documentation:
 
@@ -280,16 +280,20 @@ def go_sync_ebs_volume_to_s3_bucket(self, bucket_to_sync, ssh_tunnel, destinatio
 
         ---
         Parameters:
-            bucket_to_sync : str
-                Name of S3 bucket.
+            buckets_to_sync : str or list
+                Preferably a list of strings of S3 buckets. If string is passed,, have
+                the string take the form of a comma-separated list of S3 bucket names.
+                This will be parsed into a list of string.
             ssh_tunnel : str, default=None
                 String for using SSH to remotely execute script on EC2 instance.
-            destination_dir : str, default=/home/s3buckets
-                Destination directory for S3 bucket(s) on EBS volume
+            ebs_bucket_dir : str, default=/home/s3buckets
+                Location of S3 bucket folder on EBS volume.
     """
-    # sync bucket
-    directory_name = """ "sudo aws s3 sync {1}/{0} s3://{0} --delete" """.format(bucket_to_sync, destination_dir)
-    subprocess.run(ssh_tunnel + directory_name, shell=True)
+    ### sync buckets
+    # sync each bucket
+    for bucket in buckets_to_sync:
+        directory_name = """ "sudo aws s3 sync {1}/{0} s3://{0} --delete" """.format(bucket, ebs_bucket_dir)
+        subprocess.run(ssh_tunnel + directory_name, shell=True)
 
 def go_start_instance(self):
     """
