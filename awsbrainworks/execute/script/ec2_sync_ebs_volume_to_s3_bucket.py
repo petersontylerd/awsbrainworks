@@ -51,10 +51,15 @@ if __name__ == "__main__":
     # instantiate manager
     ec2_instance = AWSBrainEC2InstanceManager(instance_name=args.instance_name)
 
+    # get SSH command snippet
     ssh_tunnel = ec2_instance.get_ssh_tunnel()
 
+    # get username
+    ec2_instance.instance_username = ec2_instance.get_instance_username()
+
     # sync S3 bucket to EBS volume
-    ec2_instance.go_sync_s3_bucket_to_ebs_volume(
+    ec2_instance.go_sync_ebs_volume_to_s3_bucket(
         args.buckets_to_sync,
         ssh_tunnel,
+        ec2_instance.instance_username
     )

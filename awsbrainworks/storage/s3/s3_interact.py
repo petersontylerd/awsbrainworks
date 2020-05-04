@@ -155,7 +155,7 @@ def parse_buckets_arg(self, buckets):
 
     return buckets
 
-def go_upload_local_object_to_bucket(self, bucket_name, local_object, prefix=""):
+def go_upload_local_object_to_bucket(self, local_object, prefix=""):
     """
     Documentation:
 
@@ -172,8 +172,6 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object, prefix="")
 
         ---
         Parameters:
-            bucket_name : str
-                Name of S3 bucket.
             local_object : str
                 Local object to upload to bucket.
             prefix : str, default=""
@@ -197,7 +195,7 @@ def go_upload_local_object_to_bucket(self, bucket_name, local_object, prefix="")
         def upload_file(filename):
             self.s3_client.upload_file(
                 Filename=filename,
-                Bucket=bucket_name,
+                Bucket=self.bucket_name,
                 Key=os.path.join(prefix, local_object.split("/")[-1], os.path.relpath(filename, local_object)),
             )
 

@@ -181,8 +181,18 @@ if __name__ == "__main__":
         install_from_requirements=True,
     )
 
+    # give EC2 user sudo privileges
+    ec2_launcher.go_make_user_sudo(
+        ssh_tunnel=ssh_tunnel,
+        instance_username=ec2_launcher.instance_username,
+    )
+
+    # create remote access config file for VS Code
+    ec2_launcher.go_create_vs_code_config()
+
+    ### create EBS volume
     if ec2_launcher.volume_name is not None and ec2_launcher.volume_size is not None:
-        ### create EBS volume
+
         # instantiate EBS volume creator
         ebs_volume_creator = AWSBrainEBSVolumeCreator(
             volume_name=ec2_launcher.volume_name,
@@ -196,7 +206,6 @@ if __name__ == "__main__":
         ebs_volume_creator.go_attach_volume(
             instance_name=ec2_launcher.instance_name,
         )
-
 
         # 5 second pause
         time.sleep(5)
@@ -218,6 +227,7 @@ if __name__ == "__main__":
             # sync S3 bucket to EBS volume
             ec2_launcher.go_sync_s3_bucket_to_ebs_volume(
                 args.buckets_to_sync,
+                ec2_launcher.instance_username,
                 ssh_tunnel,
             )
 

@@ -197,7 +197,7 @@ def get_block_storage_device_ext4_status(self, ssh_tunnel, volume_device_name):
         block_device_is_ext4 = True
     return block_device_is_ext4
 
-def go_setup_ebs_volume_sync(self, ssh_tunnel, instance_username, volume_device_name, destination_dir="/home/s3buckets"):
+def go_setup_ebs_volume_sync(self, ssh_tunnel, instance_username, volume_device_name, destination_dir=None):
     """
     Documentation:
 
@@ -213,9 +213,13 @@ def go_setup_ebs_volume_sync(self, ssh_tunnel, instance_username, volume_device_
                 EC2 instance username.
             volume_device_name : str
                 Device name of EBS volume in EC2 instance
-            destination_dir : str, default=/home/s3buckets
+            destination_dir : str, default=None
                 Destination directory for S3 bucket(s) on EBS volume
     """
+    # set destination dir if None provided
+    if destination_dir is None:
+        destination_dir = "/home/{}/s3buckets".format(instance_username)
+
     ### setup file system
     # treat special (block) files as ordinay ones
     special_files = """ "sudo file --special-files {0}" """.format(volume_device_name)
@@ -245,7 +249,7 @@ def go_setup_ebs_volume_sync(self, ssh_tunnel, instance_username, volume_device_
     change_owner = """ "sudo chown -R {0}:{0} {1}" """.format(instance_username, destination_dir)
     subprocess.run(ssh_tunnel + change_owner, shell=True)
 
-def go_sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, destination_dir="/home/s3buckets"):
+def go_sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, instance_username, destination_dir=None):
     """
     Documentation:
 
@@ -261,16 +265,22 @@ def go_sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, destinati
                 This will be parsed into a list of string.
             ssh_tunnel : str, default=None
                 String for using SSH to remotely execute script on EC2 instance.
-            destination_dir : str, default=/home/s3buckets
+            instance_username : str
+                EC2 instance username.
+            destination_dir : str, default=None
                 Destination directory for S3 bucket(s) on EBS volume
     """
+    # set destination dir if None provided
+    if destination_dir is None:
+        destination_dir = "/home/{}/s3buckets".format(instance_username)
+
     ### sync buckets
     # sync each bucket
     for bucket in buckets_to_sync:
         directory_name = """ "sudo aws s3 sync s3://{0} {1}/{0}" """.format(bucket, destination_dir)
         subprocess.run(ssh_tunnel + directory_name, shell=True)
 
-def go_sync_ebs_volume_to_s3_bucket(self, buckets_to_sync, ssh_tunnel, ebs_bucket_dir="/home/s3buckets"):
+def go_sync_ebs_volume_to_s3_bucket(self, buckets_to_sync, ssh_tunnel, instance_username, ebs_bucket_dir=None):
     """
     Documentation:
 
@@ -286,9 +296,15 @@ def go_sync_ebs_volume_to_s3_bucket(self, buckets_to_sync, ssh_tunnel, ebs_bucke
                 This will be parsed into a list of string.
             ssh_tunnel : str, default=None
                 String for using SSH to remotely execute script on EC2 instance.
-            ebs_bucket_dir : str, default=/home/s3buckets
+            instance_username : str
+                EC2 instance username.
+            ebs_bucket_dir : str, default=None
                 Location of S3 bucket folder on EBS volume.
     """
+    # set destination dir if None provided
+    if ebs_bucket_dir is None:
+        ebs_bucket_dir = "/home/{}/s3buckets".format(instance_username)
+
     ### sync buckets
     # sync each bucket
     for bucket in buckets_to_sync:
@@ -406,6 +422,34 @@ def go_reboot_instance(self):
     time.sleep(10)
     print("Success: EC2 Instance '{}' status is now ok".format(self.instance_name))
     print("Success: EC2 Instance '{}' now rebooted".format(self.instance_name))
+
+def go_create_vs_code_config(self):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Create config file in $HOME/.ssh folder to facilitate VS code
+            remote connection to AWS EC2 instance.
+    """
+    # get username
+    self.instance_username = self.get_instance_username()
+
+    # create text insert command
+    bash_create_config = """
+    echo '
+    Host {1}
+         HostName {0}
+         User {1}
+         IdentityFile {2}
+    ' > {3}
+    """.format(
+        self.instance.public_dns_name,
+        self.instance_username,
+        os.path.join(os.environ["HOME"], ".ssh", self.instance.key_name + ".pem"),
+        os.path.join(os.environ["HOME"], ".ssh", "config"),
+    )
+    subprocess.run(bash_create_config, shell=True)
 
 def go_modify_instance_type(self, instance_type, stop_if_running=False, restart_instance=False):
     """

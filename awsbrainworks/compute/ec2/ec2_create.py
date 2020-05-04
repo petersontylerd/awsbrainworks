@@ -29,7 +29,7 @@ def go_launch_instance(self):
         ami_id = self.get_ami_id(self.ami_name)
 
         # identify user data shell script
-        user_data_dir = "../compute/ec2/user_data_files"
+        user_data_dir = "../../compute/ec2/user_data_files"
         user_data = "{}/pass.sh".format(user_data_dir) if self.user_data is None else "{}/{}".format(user_data_dir, self.user_data)
 
         # create instance
@@ -112,6 +112,7 @@ def go_launch_instance(self):
         # get username
         self.instance_username = self.get_instance_username()
 
+
 def get_ami_id(self, ami_name):
     """
     Documentation:
@@ -148,23 +149,23 @@ def go_setup_bash(self, ssh_tunnel):
                 String for using SSH to remotely execute script on EC2 instance.
     """
     # setup bash aliases
-    bash_aliases = """ "{}" """.format(open("../compute/setup/bash/setup_bash_aliases.sh").read())
+    bash_aliases = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_aliases.sh").read())
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)
 
     # setup bash functions
-    bash_functions = """ "{}" """.format(open("../compute/setup/bash/setup_bash_functions.sh").read())
+    bash_functions = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_functions.sh").read())
     subprocess.run(ssh_tunnel + bash_functions, shell=True)
 
     # setup git configuration
-    bash_git = """ "{}" """.format(open("../compute/setup/bash/setup_bash_git.sh").read())
+    bash_git = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_git.sh").read())
     subprocess.run(ssh_tunnel + bash_git, shell=True)
 
     # setup bash profile
-    bash_profile = """ "{}" """.format(open("../compute/setup/bash/setup_bash_profile.sh").read())
+    bash_profile = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_profile.sh").read())
     subprocess.run(ssh_tunnel + bash_profile, shell=True)
 
     # source the .bashrc
-    bash_main = """ "{}" """.format(open("../compute/setup/bash/setup_bash.sh").read())
+    bash_main = """ "{}" """.format(open("../../compute/setup/bash/setup_bash.sh").read())
     subprocess.run(ssh_tunnel + bash_main, shell=True)
 
 def go_setup_python(self, ssh_tunnel, scp_tunnel=None, install_from_requirements=False):
@@ -187,7 +188,7 @@ def go_setup_python(self, ssh_tunnel, scp_tunnel=None, install_from_requirements
                 local requirement.txt file.
     """
     # set bash environment attributes to support Python
-    bash_python = """ "{}" """.format(open("../compute/setup/python/setup_bash_python.sh").read())
+    bash_python = """ "{}" """.format(open("../../compute/setup/python/setup_bash_python.sh").read())
     subprocess.run(ssh_tunnel + bash_python, shell=True)
 
 
@@ -201,14 +202,14 @@ def go_setup_python(self, ssh_tunnel, scp_tunnel=None, install_from_requirements
         instance_username = self.get_instance_username()
 
         # scurely copy requirements.txt file into .python folder in EC2 instance
-        python_hidden_folder = """-r ../compute/setup/python/ {}@{}:~/.python/""".format(
+        python_hidden_folder = """-r ../../compute/setup/python/ {}@{}:~/.python/""".format(
                                                                         instance_username,
                                                                         self.instance.public_dns_name,
                                                                     )
         subprocess.run(scp_tunnel + python_hidden_folder, shell=True)
 
         # pip install each library in the requirements.txt file one at a time
-        req_install = """ "cat ~/.python/requirements.txt | xargs -n 1 python3.7 -m pip install" """
+        req_install = """ "cat ~/.python/requirements.txt | xargs -n 1 python3.7 -m pip install --no-cache-dir" """
         subprocess.run(ssh_tunnel + req_install, shell=True)
 
 def go_setup_aws(self, scp_tunnel):
@@ -269,7 +270,7 @@ def get_user_data_status(self, ssh_tunnel):
         status = True
     return status
 
-def go_make_user_sudo(self, ssh_tunnel):
+def go_make_user_sudo(self, ssh_tunnel, instance_username):
     """
     Documentation:
 
@@ -281,7 +282,9 @@ def go_make_user_sudo(self, ssh_tunnel):
         Parameters:
             ssh_tunnel : str
                 String for using SSH to remotely execute script on EC2 instance.
+            instance_username : str
+                EC2 instance username.
     """
     # setup bash aliases
-    bash_aliases = """ "sudo adduser {} sudo" """.format(self.instance_name)
+    bash_aliases = """ "usermod -aG sudo {}" """.format(instance_username)
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)

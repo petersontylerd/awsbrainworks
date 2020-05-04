@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
 sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
 
 import aws_attributes
-import awsbrainworks
+from awsbrainworks import AWSBrainS3BucketCreator
 
 ## arguments
 parser = argparse.ArgumentParser(description="")
@@ -30,8 +30,6 @@ if __name__ == "__main__":
 
     ### create S3 bucket manager
     # instantiate manager
-    s3_manager = AWSBrainS3BucketManager()
+    s3_creator = AWSBrainS3BucketCreator(bucket_name=args.bucket_name)
 
-    s3_manager.create_bucket(
-        args.bucket_name
-    )
+    s3_creator.create_bucket()

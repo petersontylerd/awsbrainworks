@@ -69,6 +69,7 @@ class AWSBrainEC2InstanceManager(AWSBrainEC2InstanceService):
         get_scp_tunnel,
         get_ssh_tunnel,
         go_access_instance,
+        go_create_vs_code_config,
         go_modify_instance_type,
         go_reboot_instance,
         go_start_instance,
@@ -124,7 +125,7 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
         get_ami_id,
         get_user_data_status,
         go_launch_instance,
-        go_make_user_sudo
+        go_make_user_sudo,
         go_setup_aws,
         go_setup_bash,
         go_setup_python,
@@ -295,8 +296,11 @@ class AWSBrainS3BucketCreator(AWSBrainS3BucketManager):
                     Name of S3 bucket
         """
         AWSBrainS3BucketManager.__init__(self)
-
         self.bucket_name = bucket_name
+
+        # if buckets_to_sync is not None, ensure these buckets exist
+        assert self.bucket_name not in self.get_bucket_names(), "bucket_name is already in use on S3."
+
 
 class AWSBrainEBSVolumeService:
     """
