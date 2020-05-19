@@ -209,8 +209,13 @@ def go_setup_python(self, ssh_tunnel, scp_tunnel=None, install_from_requirements
         subprocess.run(scp_tunnel + python_hidden_folder, shell=True)
 
         # pip install each library in the requirements.txt file one at a time
-        req_install = """ "cat ~/.python/requirements.txt | xargs -n 1 python3.7 -m pip install --no-cache-dir" """
+        # req_install = """ "cat ~/.python/requirements.txt | xargs -n 1 python3.7 -m pip install --no-cache-dir" """
+        req_install = """ "cat ~/.python/requirements.txt | xargs -n 1 python3.7 -m pip install" """
         subprocess.run(ssh_tunnel + req_install, shell=True)
+
+        # # setup material theme in jupyter
+        # req_install = """ "jt -t monokai -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T" """
+        # subprocess.run(ssh_tunnel + req_install, shell=True)
 
 def go_setup_aws(self, scp_tunnel):
     """
