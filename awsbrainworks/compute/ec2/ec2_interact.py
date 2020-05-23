@@ -111,7 +111,7 @@ def get_scp_tunnel(self):
                                                 )
     return scp_tunnel
 
-def go_access_instance(self):
+def go_access_instance(self, start_if_stopped=False):
     """
     Documentation:
 
@@ -119,8 +119,36 @@ def go_access_instance(self):
         Description:
             Use SSH to remote into running EC2 instance.
 
+        ---
+        Parameters:
+            start_if_stopped: boolean, default=False
+                Start the instance if it's stopped before attempting to
+                access via SSH
+
     """
     ssh_tunnel = self.get_ssh_tunnel()
+
+    ## start the instance if it's stopped
+    if start_if_stopped:
+
+        # start instnace
+        self.go_start_instance()
+
+        # get username
+        self.instance_username = self.get_instance_username()
+
+        # give EC2 user sudo privileges
+        self.go_make_user_sudo(
+            ssh_tunnel=ssh_tunnel,
+            instance_username=self.instance_username,
+        )
+
+        # create remote access config file for VS Code
+        self.go_create_vs_code_config()
+
+        # reload EC2 instance
+        self.instance.reload()
+
     subprocess.run(ssh_tunnel, shell=True)
 
 def get_block_storage_detail(self, ssh_tunnel):
@@ -506,3 +534,23 @@ def go_modify_instance_type(self, instance_type, stop_if_running=False, restart_
         # start instance
         if restart_instance:
             self.go_start_instance()
+
+
+def go_make_user_sudo(self, ssh_tunnel, instance_username):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Give user sudo privileges.
+
+        ---
+        Parameters:
+            ssh_tunnel : str
+                String for using SSH to remotely execute script on EC2 instance.
+            instance_username : str
+                EC2 instance username.
+    """
+    # setup bash aliases
+    bash_aliases = """ "usermod -aG sudo {}" """.format(instance_username)
+    subprocess.run(ssh_tunnel + bash_aliases, shell=True)

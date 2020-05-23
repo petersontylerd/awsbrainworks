@@ -274,22 +274,3 @@ def get_user_data_status(self, ssh_tunnel):
     if result == "yes":
         status = True
     return status
-
-def go_make_user_sudo(self, ssh_tunnel, instance_username):
-    """
-    Documentation:
-
-        ---
-        Description:
-            Give user sudo privileges.
-
-        ---
-        Parameters:
-            ssh_tunnel : str
-                String for using SSH to remotely execute script on EC2 instance.
-            instance_username : str
-                EC2 instance username.
-    """
-    # setup bash aliases
-    bash_aliases = """ "usermod -aG sudo {}" """.format(instance_username)
-    subprocess.run(ssh_tunnel + bash_aliases, shell=True)
