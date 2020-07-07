@@ -9,7 +9,7 @@ from concurrent import futures
 
 # custom imports
 sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
-sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
+sys.path.append(os.path.join(os.environ["HOME"],"repos", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks

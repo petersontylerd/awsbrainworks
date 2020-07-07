@@ -8,7 +8,7 @@ import time
 
 # custom imports
 sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
-sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
+sys.path.append(os.path.join(os.environ["HOME"],"repos", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -187,8 +187,8 @@ if __name__ == "__main__":
         instance_username=ec2_launcher.instance_username,
     )
 
-    # create remote access config file for VS Code
-    ec2_launcher.go_create_vs_code_config()
+    # # create remote access config file for VS Code
+    # ec2_launcher.go_create_vs_code_config()
 
     ### create EBS volume
     if ec2_launcher.volume_name is not None and ec2_launcher.volume_size is not None:
@@ -227,8 +227,8 @@ if __name__ == "__main__":
             # sync S3 bucket to EBS volume
             ec2_launcher.go_sync_s3_bucket_to_ebs_volume(
                 args.buckets_to_sync,
-                ec2_launcher.instance_username,
                 ssh_tunnel,
+                ec2_launcher.instance_username,
             )
 
     ### remote access

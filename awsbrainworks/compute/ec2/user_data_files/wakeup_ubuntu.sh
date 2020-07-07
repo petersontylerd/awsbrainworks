@@ -1,13 +1,11 @@
 #!/bin/bash
-apt-get update -y
-apt-get upgrade -y
+sudo apt update -y
 
 sudo apt-get install -y \
     awscli \
     build-essential \
     bzip2 \
     curl \
-    dos2unix \
     git \
     htop \
     libbz2-dev \
@@ -25,12 +23,12 @@ sudo apt-get install -y \
     python3-pip \
     python3.7 \
     software-properties-common \
-    sqlite3 \
     ssh \
     tree \
     uuid-dev \
     zlib1g-dev \
 
 apt-get clean
+
 
 echo 'done' >> /tmp/testfile.txt

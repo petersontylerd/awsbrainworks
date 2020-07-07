@@ -10,7 +10,7 @@ import time
 
 # custom imports
 sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
-sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
+sys.path.append(os.path.join(os.environ["HOME"],"repos", "awsbrainworks"))
 
 import aws_attributes
 import awsbrainworks
@@ -308,6 +308,7 @@ def go_sync_s3_bucket_to_ebs_volume(self, buckets_to_sync, ssh_tunnel, instance_
         directory_name = """ "sudo aws s3 sync s3://{0} {1}/{0}" """.format(bucket, destination_dir)
         subprocess.run(ssh_tunnel + directory_name, shell=True)
 
+
 def go_sync_ebs_volume_to_s3_bucket(self, buckets_to_sync, ssh_tunnel, instance_username, ebs_bucket_dir=None):
     """
     Documentation:
@@ -552,5 +553,5 @@ def go_make_user_sudo(self, ssh_tunnel, instance_username):
                 EC2 instance username.
     """
     # setup bash aliases
-    bash_aliases = """ "usermod -aG sudo {}" """.format(instance_username)
+    bash_aliases = """ "sudo usermod -aG sudo {}" """.format(instance_username)
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)

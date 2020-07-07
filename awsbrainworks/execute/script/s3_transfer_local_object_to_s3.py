@@ -8,7 +8,7 @@ import time
 
 # custom imports
 sys.path.append(os.path.join(os.environ["HOME"], ".aws_attributes"))
-sys.path.append(os.path.join(os.environ["HOME"],"workspace", "awsbrainworks"))
+sys.path.append(os.path.join(os.environ["HOME"],"repos", "awsbrainworks"))
 
 import aws_attributes
 from awsbrainworks import AWSBrainS3BucketManager
