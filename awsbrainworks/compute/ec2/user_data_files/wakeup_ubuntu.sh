@@ -1,5 +1,6 @@
 #!/bin/bash
-sudo apt update -y
+sudo apt-get update -y
+sudo apt-get upgrade -y
 
 sudo apt-get install -y \
     awscli \
@@ -27,8 +28,5 @@ sudo apt-get install -y \
     tree \
     uuid-dev \
     zlib1g-dev \
-
-apt-get clean
-
 
 echo 'done' >> /tmp/testfile.txt

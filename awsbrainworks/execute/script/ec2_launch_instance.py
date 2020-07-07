@@ -187,8 +187,8 @@ if __name__ == "__main__":
         instance_username=ec2_launcher.instance_username,
     )
 
-    # # create remote access config file for VS Code
-    # ec2_launcher.go_create_vs_code_config()
+    # create remote access config file for VS Code
+    ec2_launcher.go_create_vs_code_config()
 
     ### create EBS volume
     if ec2_launcher.volume_name is not None and ec2_launcher.volume_size is not None:
