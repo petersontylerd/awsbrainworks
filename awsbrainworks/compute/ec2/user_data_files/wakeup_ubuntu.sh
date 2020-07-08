@@ -8,6 +8,7 @@ sudo apt-get install -y \
     bzip2 \
     curl \
     git \
+    gnupg-agent \
     htop \
     libbz2-dev \
     libffi-dev \
@@ -27,6 +28,6 @@ sudo apt-get install -y \
     ssh \
     tree \
     uuid-dev \
-    zlib1g-dev \
+    zlib1g-dev
 
 echo 'done' >> /tmp/testfile.txt
