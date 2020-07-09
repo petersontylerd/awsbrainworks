@@ -150,7 +150,10 @@ def go_setup_bash(self, ssh_tunnel):
     """
     # setup bash aliases
     bash_aliases = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_aliases.sh").read())
+    print("!"*100)
+    print(ssh_tunnel + bash_aliases)
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)
+    print("!"*100)
 
     # setup bash functions
     bash_functions = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_functions.sh").read())

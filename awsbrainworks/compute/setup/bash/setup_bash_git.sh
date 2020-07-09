@@ -8,7 +8,6 @@ fi
 ' >> ~/.bashrc
 
 echo '
-# alias info
 git config --global user.email '\''petersontylerd@gmail.com'\''
 git config --global user.name '\''Tyler Peterson'\''
 ' >> ~/.bash_git
