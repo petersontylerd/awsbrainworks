@@ -134,6 +134,70 @@ def get_ami_id(self, ami_name):
 
     return ami_id
 
+def go_setup_git_pulls(self, ssh_tunnel):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Run command to pull git repos.
+
+        ---
+        Parameters:
+            ssh_tunnel : str
+                String for using SSH to remotely execute script on EC2 instance.
+    """
+    # git pulls
+    git_pulls = """ "{}" """.format(open("../../compute/setup/git/setup_git_pulls.sh").read())
+    subprocess.run(ssh_tunnel + git_pulls, shell=True)
+
+def go_setup_pyenv(self, ssh_tunnel):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Run command to setup pyenv.
+
+        ---
+        Parameters:
+            ssh_tunnel : str
+                String for using SSH to remotely execute script on EC2 instance.
+    """
+    # install pyenv
+    pyenv_install = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_install.sh").read())
+    subprocess.run(ssh_tunnel + pyenv_install, shell=True)
+    
+    # # install pyenv
+    # pyenv_setup = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_setup.sh").read())
+    # subprocess.run(ssh_tunnel + pyenv_setup, shell=True)
+
+def go_setup_docker(self, ssh_tunnel):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Run series of commands to setup docker and docker compose.
+
+        ---
+        Parameters:
+            ssh_tunnel : str
+                String for using SSH to remotely execute script on EC2 instance.
+    """
+    # install docker
+    docker_install = """ "{}" """.format(open("../../compute/setup/docker/docker_install.sh").read())
+    subprocess.run(ssh_tunnel + docker_install, shell=True)
+    
+    # install docker compose
+    docker_compose_install = """ "{}" """.format(open("../../compute/setup/docker/docker_compose_install.sh").read())
+    subprocess.run(ssh_tunnel + docker_compose_install, shell=True)
+
+    # add username to groups
+    docker_setup = """ "{}" """.format(open("../../compute/setup/docker/docker_setup.sh").read())
+    subprocess.run(ssh_tunnel + docker_setup, shell=True)
+    
+
 def go_setup_bash(self, ssh_tunnel):
     """
     Documentation:
@@ -150,17 +214,14 @@ def go_setup_bash(self, ssh_tunnel):
     """
     # setup bash aliases
     bash_aliases = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_aliases.sh").read())
-    print("!"*100)
-    print(ssh_tunnel + bash_aliases)
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)
-    print("!"*100)
-
+    
     # setup bash functions
     bash_functions = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_functions.sh").read())
     subprocess.run(ssh_tunnel + bash_functions, shell=True)
 
     # setup git configuration
-    bash_git = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_git.sh").read())
+    bash_git = """ "{}" """.format(open("../../compute/setup/git/setup_git_config.sh").read())
     subprocess.run(ssh_tunnel + bash_git, shell=True)
 
     # setup bash profile

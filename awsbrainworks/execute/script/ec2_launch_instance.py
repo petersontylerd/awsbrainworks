@@ -173,12 +173,27 @@ if __name__ == "__main__":
     ec2_launcher.go_setup_bash(
         ssh_tunnel=ssh_tunnel,
     )
+    
+    # git pulls
+    ec2_launcher.go_setup_git_pulls(
+        ssh_tunnel=ssh_tunnel,
+    )
 
     # python
     ec2_launcher.go_setup_python(
         ssh_tunnel=ssh_tunnel,
         scp_tunnel=scp_tunnel,
         install_from_requirements=True,
+    )
+
+    # docker
+    ec2_launcher.go_setup_docker(
+        ssh_tunnel=ssh_tunnel,
+    )
+    
+    # docker
+    ec2_launcher.go_setup_pyenv(
+        ssh_tunnel=ssh_tunnel,
     )
 
     # give EC2 user sudo privileges
