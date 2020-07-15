@@ -167,7 +167,7 @@ def go_setup_pyenv(self, ssh_tunnel):
     # install pyenv
     pyenv_install = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_install.sh").read())
     subprocess.run(ssh_tunnel + pyenv_install, shell=True)
-    
+
     # # install pyenv
     # pyenv_setup = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_setup.sh").read())
     # subprocess.run(ssh_tunnel + pyenv_setup, shell=True)
@@ -188,7 +188,7 @@ def go_setup_docker(self, ssh_tunnel):
     # install docker
     docker_install = """ "{}" """.format(open("../../compute/setup/docker/docker_install.sh").read())
     subprocess.run(ssh_tunnel + docker_install, shell=True)
-    
+
     # install docker compose
     docker_compose_install = """ "{}" """.format(open("../../compute/setup/docker/docker_compose_install.sh").read())
     subprocess.run(ssh_tunnel + docker_compose_install, shell=True)
@@ -196,7 +196,7 @@ def go_setup_docker(self, ssh_tunnel):
     # add username to groups
     docker_setup = """ "{}" """.format(open("../../compute/setup/docker/docker_setup.sh").read())
     subprocess.run(ssh_tunnel + docker_setup, shell=True)
-    
+
 
 def go_setup_bash(self, ssh_tunnel):
     """
@@ -215,7 +215,7 @@ def go_setup_bash(self, ssh_tunnel):
     # setup bash aliases
     bash_aliases = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_aliases.sh").read())
     subprocess.run(ssh_tunnel + bash_aliases, shell=True)
-    
+
     # setup bash functions
     bash_functions = """ "{}" """.format(open("../../compute/setup/bash/setup_bash_functions.sh").read())
     subprocess.run(ssh_tunnel + bash_functions, shell=True)

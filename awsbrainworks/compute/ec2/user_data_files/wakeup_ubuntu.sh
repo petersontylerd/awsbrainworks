@@ -1,9 +1,8 @@
-#!/bin/bash
-sudo apt-get update -y
-sudo apt-get upgrade -y
-
+#!/bin/sh
+sudo apt-get update -y && sudo apt-get upgrade -y
 sudo apt-get install -y \
     awscli \
+    apt-transport-https \
     build-essential \
     bzip2 \
     curl \
@@ -29,5 +28,4 @@ sudo apt-get install -y \
     tree \
     uuid-dev \
     zlib1g-dev
-
 echo 'done' >> /tmp/testfile.txt

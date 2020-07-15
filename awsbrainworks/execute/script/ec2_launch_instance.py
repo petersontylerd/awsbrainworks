@@ -191,7 +191,7 @@ if __name__ == "__main__":
         ssh_tunnel=ssh_tunnel,
     )
     
-    # docker
+    # pyenv
     ec2_launcher.go_setup_pyenv(
         ssh_tunnel=ssh_tunnel,
     )

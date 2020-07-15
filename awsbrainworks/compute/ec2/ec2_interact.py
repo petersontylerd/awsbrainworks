@@ -82,7 +82,7 @@ def get_ssh_tunnel(self):
     instance_username = self.get_instance_username()
 
     # create prefix for SSH tunneling command line script
-    ssh_tunnel = "ssh -o 'StrictHostKeyChecking no' -i {}/.ssh/{}.pem {}@{}".format(
+    ssh_tunnel = "ssh -o 'StrictHostKeyChecking no' -i {}/.ssh/aws/{}.pem {}@{}".format(
                                                                                 os.environ["HOME"],
                                                                                 self.instance.key_name,
                                                                                 instance_username,
@@ -105,7 +105,7 @@ def get_scp_tunnel(self):
                 Command line script for tunneling into EC2 instance using SSH.
     """
     # create prefix for scp tunneling command line script
-    scp_tunnel = """scp -i {}/.ssh/{}.pem """.format(
+    scp_tunnel = """scp -i {}/.ssh/aws/{}.pem """.format(
                                                     os.environ["HOME"],
                                                     self.instance.key_name,
                                                 )
