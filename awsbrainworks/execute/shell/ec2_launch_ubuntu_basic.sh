@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../script
 
-python3.7 ec2_launch_instance.py \
+python3 ec2_launch_instance.py \
                 --instance_name=$1 \
                 --key_name=tdpawskey \
                 --ami_name=ubuntu_1804_basic \
