@@ -130,7 +130,6 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
         go_setup_bash,
         go_setup_docker,
         go_setup_git_pulls,
-        go_setup_pyenv,
         go_setup_python,
     )
 

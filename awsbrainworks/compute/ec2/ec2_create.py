@@ -151,26 +151,6 @@ def go_setup_git_pulls(self, ssh_tunnel):
     git_pulls = """ "{}" """.format(open("../../compute/setup/git/setup_git_pulls.sh").read())
     subprocess.run(ssh_tunnel + git_pulls, shell=True)
 
-def go_setup_pyenv(self, ssh_tunnel):
-    """
-    Documentation:
-
-        ---
-        Description:
-            Run command to setup pyenv.
-
-        ---
-        Parameters:
-            ssh_tunnel : str
-                String for using SSH to remotely execute script on EC2 instance.
-    """
-    # install pyenv
-    pyenv_install = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_install.sh").read())
-    subprocess.run(ssh_tunnel + pyenv_install, shell=True)
-
-    # install pyenv
-    pyenv_setup = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_setup.sh").read())
-    subprocess.run(ssh_tunnel + pyenv_setup, shell=True)
 
 def go_setup_docker(self, ssh_tunnel):
     """

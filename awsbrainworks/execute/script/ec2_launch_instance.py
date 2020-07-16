@@ -191,11 +191,6 @@ if __name__ == "__main__":
         ssh_tunnel=ssh_tunnel,
     )
 
-    # pyenv
-    ec2_launcher.go_setup_pyenv(
-        ssh_tunnel=ssh_tunnel,
-    )
-
     # give EC2 user sudo privileges
     ec2_launcher.go_make_user_sudo(
         ssh_tunnel=ssh_tunnel,
