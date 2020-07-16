@@ -3,7 +3,7 @@ set -e
 [ -n "$PYENV_DEBUG" ] && set -x
 
 if [ -z "$PYENV_ROOT" ]; then
-  PYENV_ROOT='\$HOME/.pyenv'
+  PYENV_ROOT="${HOME}/.pyenv"
 fi
 
 colorize() {
