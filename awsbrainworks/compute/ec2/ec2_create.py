@@ -168,9 +168,9 @@ def go_setup_pyenv(self, ssh_tunnel):
     pyenv_install = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_install.sh").read())
     subprocess.run(ssh_tunnel + pyenv_install, shell=True)
 
-    # # install pyenv
-    # pyenv_setup = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_setup.sh").read())
-    # subprocess.run(ssh_tunnel + pyenv_setup, shell=True)
+    # install pyenv
+    pyenv_setup = """ "{}" """.format(open("../../compute/setup/pyenv/pyenv_setup.sh").read())
+    subprocess.run(ssh_tunnel + pyenv_setup, shell=True)
 
 def go_setup_docker(self, ssh_tunnel):
     """
