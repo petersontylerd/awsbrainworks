@@ -44,7 +44,6 @@ alias mkdir='\''mkdir -pv'\''
 echo '
 # convenience
 alias h='\''history'\''
-alias python='\''python3.7'\''
 ' >> ~/.bash_aliases
 
 echo '
