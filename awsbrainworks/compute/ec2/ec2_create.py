@@ -39,6 +39,15 @@ def go_launch_instance(self):
             KeyName=self.key_name,
             MinCount=1,
             MaxCount=1,
+             BlockDeviceMappings=[
+                {
+                    'Ebs': {
+                        'DeleteOnTermination': True,
+                        'VolumeSize': 20,
+                        'VolumeType': 'standard',
+                    },
+                },
+            ],
             Monitoring={
                 "Enabled": False
             },
