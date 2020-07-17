@@ -131,6 +131,7 @@ class AWSBrainEC2InstanceCreator(AWSBrainEC2InstanceManager):
         go_setup_docker,
         go_setup_git_pulls,
         go_setup_python,
+        go_setup_ssh,
     )
 
     def __init__(self, instance_name, key_name, ami_name, instance_type, volume_name=None, volume_size=None, buckets_to_sync=None, user_data=None, shutdown_behavior="stop"):
