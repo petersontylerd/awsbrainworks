@@ -293,6 +293,29 @@ def go_setup_aws(self, scp_tunnel):
                                     )
     subprocess.run(scp_tunnel + aws_cred, shell=True)
 
+def go_setup_ssh(self, scp_tunnel):
+    """
+    Documentation:
+
+        ---
+        Description:
+            Setup SSH configuration
+
+        ---
+        Parameters:
+            scp_tunnel : str
+                String for using SCP to securely copy local files to EC2 instance.
+    """
+    # retrieve instance_username
+    instance_username = self.get_instance_username()
+
+    # securely copy .aws file stored locally into EC2 instance
+    ssh_folder = """-r ~/.ssh {}@{}:~/""".format(
+                                        instance_username,
+                                        self.instance.public_dns_name,
+                                    )
+    subprocess.run(scp_tunnel + ssh_folder, shell=True)
+
 def get_user_data_status(self, ssh_tunnel):
     """
     Documentation:

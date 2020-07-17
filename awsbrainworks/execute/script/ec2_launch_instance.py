@@ -164,6 +164,11 @@ if __name__ == "__main__":
         print("\n!! USER DATA DID NOT FINISH\n")
 
     ## environment setup
+    # SSH
+    ec2_launcher.go_setup_ssh(
+        scp_tunnel=scp_tunnel,
+    )
+
     # AWS
     ec2_launcher.go_setup_aws(
         scp_tunnel=scp_tunnel,
