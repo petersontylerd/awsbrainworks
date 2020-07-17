@@ -39,12 +39,13 @@ def go_launch_instance(self):
             KeyName=self.key_name,
             MinCount=1,
             MaxCount=1,
-             BlockDeviceMappings=[
+            BlockDeviceMappings=[
                 {
-                    'Ebs': {
-                        'DeleteOnTermination': True,
-                        'VolumeSize': 20,
-                        'VolumeType': 'standard',
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "DeleteOnTermination": True,
+                        "VolumeSize": 20,
+                        "VolumeType": "standard",
                     },
                 },
             ],
