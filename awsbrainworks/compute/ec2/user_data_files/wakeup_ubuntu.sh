@@ -21,6 +21,8 @@ sudo apt-get install -y \
     nano \
     net-tools \
     openssl \
+    openjdk-8-jdk \
+    openjdk-8-jre \
     python3-pip \
     python3.7 \
     software-properties-common \
