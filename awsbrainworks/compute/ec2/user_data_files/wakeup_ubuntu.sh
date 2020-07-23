@@ -21,6 +21,8 @@ sudo apt-get install -y \
     libssl-dev \
     nano \
     net-tools \
+    nodejs \
+    npm \
     openssl \
     openjdk-8-jdk \
     openjdk-8-jre \
