@@ -9,6 +9,7 @@ sudo apt-get install -y \
     git \
     gnupg-agent \
     htop \
+    jq \
     libbz2-dev \
     libffi-dev \
     libgdbm-compat-dev \
